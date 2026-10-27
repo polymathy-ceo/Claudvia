@@ -1,0 +1,23 @@
+import Link from "next/link";
+
+export function Brand({ compact = false }: { compact?: boolean }) {
+  return (
+    <Link
+      className={`brand${compact ? " brand--compact" : ""}`}
+      href="/"
+      aria-label="Claudvia home"
+    >
+      <svg
+        className="brand__mark"
+        viewBox="0 0 100 100"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M23 77V23H50V50H77V77H50V50" />
+        <path d="M23 50H50" />
+      </svg>
+
+      <span className="brand__word">CLAUDVIA</span>
+    </Link>
+  );
+}

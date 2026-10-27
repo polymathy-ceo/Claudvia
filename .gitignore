@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Local development records can contain real email addresses; never commit them.
+data/
