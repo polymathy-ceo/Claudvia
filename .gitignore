@@ -8,3 +8,7 @@ out/
 .DS_Store
 # Local development records can contain real email addresses; never commit them.
 data/
+
+# Generated Next.js and TypeScript files
+next-env.d.ts
+*.tsbuildinfo
