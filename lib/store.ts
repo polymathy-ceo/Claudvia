@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { neon } from "@neondatabase/serverless";
 
 export type SubscriberStatus = "pending" | "active" | "unsubscribed";
 
@@ -163,8 +164,17 @@ function toSubscriber(row: Record<string, unknown>): Subscriber {
   };
 }
 
+type DatabaseQueryResult = {
+  rows: Record<string, unknown>[];
+  rowCount: number | null;
+};
+
+type DatabaseQueryExecutor = {
+  query(text: string, values?: unknown[]): Promise<DatabaseQueryResult>;
+};
+
 class PostgresStore implements Store {
-  constructor(private readonly pool: import("pg").Pool) {}
+  constructor(private readonly pool: DatabaseQueryExecutor) {}
 
   async getSubscriberByEmail(email: string): Promise<Subscriber | null> {
     const result = await this.pool.query("SELECT * FROM claudvia_subscribers WHERE email = $1 LIMIT 1", [email]);
@@ -272,14 +282,17 @@ async function createStore(): Promise<Store> {
     throw new Error("Set CLAUDVIA_TOKEN_SECRET to at least 32 characters before production use.");
   }
 
-  const { Pool } = await import("pg");
-  const pool = new Pool({
-    connectionString,
-    ssl: process.env.CLAUDVIA_DATABASE_SSL === "true" ? { rejectUnauthorized: true } : undefined,
-    max: 5,
-    connectionTimeoutMillis: 8000,
-    idleTimeoutMillis: 30000
-  });
+  const sql = neon(connectionString);
+  const pool: DatabaseQueryExecutor = {
+    async query(text: string, values: unknown[] = []): Promise<DatabaseQueryResult> {
+      const result = await sql.query(text, values as never[], { fullResults: true });
+      const rows = result.rows as Record<string, unknown>[];
+      return {
+        rows,
+        rowCount: result.rowCount ?? rows.length
+      };
+    }
+  };
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS claudvia_subscribers (
@@ -310,6 +323,30 @@ async function createStore(): Promise<Store> {
 }
 
 export async function getStore(): Promise<Store> {
-  if (!storePromise) storePromise = createStore();
+  if (!storePromise) {
+    storePromise = (async () => {
+      let lastError: unknown;
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          return await createStore();
+        } catch (error) {
+          lastError = error;
+
+          if (attempt < 3) {
+            await new Promise((resolve) =>
+              setTimeout(resolve, attempt * 500)
+            );
+          }
+        }
+      }
+
+      throw lastError;
+    })().catch((error) => {
+      storePromise = null;
+      throw error;
+    });
+  }
+
   return storePromise;
 }

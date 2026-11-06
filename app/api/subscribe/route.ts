@@ -73,7 +73,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, message: "Check your inbox for a confirmation link. Your subscription is not active until you confirm it." });
   } catch (error) {
-    console.error("Claudvia subscription request failed.", error);
+    console.error(
+  "Claudvia subscription request failed:",
+  error instanceof Error
+    ? `${error.name}: ${error.message}`
+    : String(error)
+);
     return jsonError("We could not process this request. Please try again later.", 500);
   }
 }

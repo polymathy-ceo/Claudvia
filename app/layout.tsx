@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <SiteHeader />
+        <ScrollReveal />
         <main id="main-content">{children}</main>
         <SiteFooter />
       </body>

@@ -1,5 +1,3 @@
-import nodemailer from "nodemailer";
-
 type EmailMessage = {
   to: string;
   subject: string;
@@ -8,35 +6,70 @@ type EmailMessage = {
   replyTo?: string;
 };
 
+function getSender() {
+  const from = process.env.EMAIL_FROM?.trim() ?? "";
+  const match = from.match(/^(.*?)\s*<([^<>]+)>$/);
+
+  if (match) {
+    return {
+      name: match[1].trim() || "Claudvia",
+      email: match[2].trim()
+    };
+  }
+
+  return {
+    name: "Claudvia",
+    email: from
+  };
+}
+
 export function isEmailConfigured(): boolean {
   return Boolean(
-    process.env.SMTP_HOST &&
-      process.env.SMTP_PORT &&
-      process.env.SMTP_USER &&
-      process.env.SMTP_PASSWORD &&
-      process.env.EMAIL_FROM
+    process.env.BREVO_API_KEY &&
+    process.env.EMAIL_FROM
   );
 }
 
 export async function sendEmail(message: EmailMessage): Promise<void> {
-  if (!isEmailConfigured()) {
-    throw new Error("Email delivery is not configured. Set the server-side SMTP variables first.");
-  }
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT);
-  const user = process.env.SMTP_USER;
-  const password = process.env.SMTP_PASSWORD;
-  const from = process.env.EMAIL_FROM;
+  const apiKey = process.env.BREVO_API_KEY;
+  const sender = getSender();
 
-  if (!host || !Number.isInteger(port) || port < 1 || port > 65535 || !user || !password || !from) {
-    throw new Error("SMTP settings are incomplete or invalid.");
+  if (!apiKey || !sender.email) {
+    throw new Error(
+      "Brevo email is not configured. Check BREVO_API_KEY and EMAIL_FROM."
+    );
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass: password }
-  });
-  await transporter.sendMail({ from, to: message.to, subject: message.subject, text: message.text, html: message.html, replyTo: message.replyTo });
+  const payload: Record<string, unknown> = {
+    sender,
+    to: [{ email: message.to }],
+    subject: message.subject,
+    textContent: message.text,
+    htmlContent: message.html
+  };
+
+  if (message.replyTo) {
+    payload.replyTo = { email: message.replyTo };
+  }
+
+  const response = await fetch(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": apiKey,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20000)
+    }
+  );
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(
+      `Brevo email request failed (${response.status}): ${details.slice(0, 1000)}`
+    );
+  }
 }

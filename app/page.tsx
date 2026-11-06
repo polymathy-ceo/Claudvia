@@ -76,6 +76,7 @@ export default function HomePage() {
       <section className="section">
         <div className="container ecosystem-preview">
           <div className="ecosystem-preview__copy">
+            <div className="ecosystem-preview__image" role="img" aria-label="Close-up view of modern technology hardware" />
             <p className="eyebrow">The ecosystem</p>
             <h2>Start with the foundation.<br /><span>Expand with purpose.</span></h2>
             <p>Claudvia’s longer-term direction includes software, developer tooling, APIs, and infrastructure. Each area will be described clearly as it moves from research to active development and, if ready, public availability.</p>
