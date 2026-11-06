@@ -30,8 +30,15 @@ export async function POST(request: Request) {
   try {
     const store = await getStore();
     const now = Date.now();
-    const bucket = createRateLimitBucket("subscribe", getClientIp(request));
-    if (await store.incrementRateLimit(bucket, now, 60 * 60 * 1000) > 5) {
+    const windowMs = 60 * 60 * 1000;
+
+    const ipBucket = createRateLimitBucket("subscribe-ip", getClientIp(request));
+    if (await store.incrementRateLimit(ipBucket, now, windowMs) > 30) {
+      return jsonError("Too many attempts. Please try again later.", 429);
+    }
+
+    const emailBucket = createRateLimitBucket("subscribe-email", email);
+    if (await store.incrementRateLimit(emailBucket, now, windowMs) > 5) {
       return jsonError("Too many attempts. Please try again later.", 429);
     }
 
