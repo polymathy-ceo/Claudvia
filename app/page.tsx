@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { NewsletterForm } from "@/components/newsletter-form";
-import { updates } from "@/content/updates";
+import { listPublishedUpdates } from "@/lib/updates-store";
 
-export default function HomePage() {
-  const latestUpdates = updates.slice(0, 2);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  let latestUpdates: Awaited<ReturnType<typeof listPublishedUpdates>> = [];
+
+  try {
+    latestUpdates = (await listPublishedUpdates()).slice(0, 2);
+  } catch (error) {
+    console.error("Could not load homepage announcements.", error);
+  }
 
   return (
     <>
@@ -100,8 +108,18 @@ export default function HomePage() {
           {latestUpdates.length ? (
             <div className="update-grid">
               {latestUpdates.map((update) => (
-                <article className="update-card" key={update.slug}>
-                  <p className="eyebrow">{update.category} <span>·</span> {update.date}</p>
+                <article className="update-card" key={update.id}>
+                  {update.imageUrl ? (
+                    <Link href={`/updates/${update.slug}`} aria-label={`Read ${update.title}`}>
+                      <img
+                        src={update.imageUrl}
+                        alt={update.imageCaption || update.title}
+                        loading="lazy"
+                        style={{ width: "100%", height: "auto", borderRadius: "12px", marginBottom: "18px" }}
+                      />
+                    </Link>
+                  ) : null}
+                  <p className="eyebrow">{update.category} <span>·</span> {update.publishedAt ? new Date(update.publishedAt).toLocaleDateString("en", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
                   <h3><Link href={`/updates/${update.slug}`}>{update.title}</Link></h3>
                   <p>{update.summary}</p>
                   <Link className="text-link" href={`/updates/${update.slug}`}>Read update <span aria-hidden="true">→</span></Link>

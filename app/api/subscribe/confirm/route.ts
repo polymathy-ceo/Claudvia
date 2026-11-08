@@ -37,7 +37,20 @@ export async function POST(request: Request) {
       console.error("Claudvia subscription receipt could not be sent.", error);
     }
 
-    return NextResponse.redirect(new URL("/subscribe/confirmed", request.url), 303);
+    const response = NextResponse.redirect(
+      new URL("/subscribe/confirmed", request.url),
+      303
+    );
+
+    response.cookies.set("claudvia_subscribed", "1", {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365
+    });
+
+    return response;
   } catch (error) {
     console.error("Claudvia subscription confirmation failed.", error);
     return NextResponse.redirect(new URL("/subscribe/invalid", request.url), 303);
