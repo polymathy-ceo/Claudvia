@@ -1,3 +1,4 @@
+
 import { randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
@@ -9,6 +10,9 @@ export type CompanyUpdate = {
   summary: string;
   content: string;
   status: "draft" | "published";
+  imageUrl: string | null;
+  imagePublicId: string | null;
+  imageCaption: string | null;
   createdAt: number;
   updatedAt: number;
   publishedAt: number | null;
@@ -44,8 +48,18 @@ async function database(): Promise<SqlClient> {
           status TEXT NOT NULL CHECK (status IN ('draft', 'published')),
           created_at BIGINT NOT NULL,
           updated_at BIGINT NOT NULL,
-          published_at BIGINT
+          published_at BIGINT,
+          image_url TEXT,
+          image_public_id TEXT,
+          image_caption TEXT
         )
+      `);
+
+      await sql.query(`
+        ALTER TABLE claudvia_updates
+        ADD COLUMN IF NOT EXISTS image_url TEXT,
+        ADD COLUMN IF NOT EXISTS image_public_id TEXT,
+        ADD COLUMN IF NOT EXISTS image_caption TEXT
       `);
 
       await sql.query(
@@ -71,6 +85,9 @@ function mapRow(row: Row): CompanyUpdate {
     summary: String(row.summary),
     content: String(row.content),
     status: row.status as "draft" | "published",
+    imageUrl: row.image_url == null ? null : String(row.image_url),
+    imagePublicId: row.image_public_id == null ? null : String(row.image_public_id),
+    imageCaption: row.image_caption == null ? null : String(row.image_caption),
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
     publishedAt: row.published_at == null ? null : Number(row.published_at),
@@ -118,6 +135,9 @@ export async function saveUpdate(input: {
   summary: string;
   content: string;
   status: "draft" | "published";
+  imageUrl?: string | null;
+  imagePublicId?: string | null;
+  imageCaption?: string | null;
 }): Promise<CompanyUpdate> {
   const sql = await database();
   const now = Date.now();
@@ -126,11 +146,20 @@ export async function saveUpdate(input: {
 
   const rows = await sql.query(
     `INSERT INTO claudvia_updates
-      (id, slug, title, category, summary, content, status, created_at, updated_at, published_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8,$9)
+      (id, slug, title, category, summary, content, status,
+       image_url, image_public_id, image_caption,
+       created_at, updated_at, published_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12)
      ON CONFLICT (id) DO UPDATE SET
-       slug=EXCLUDED.slug, title=EXCLUDED.title, category=EXCLUDED.category,
-       summary=EXCLUDED.summary, content=EXCLUDED.content, status=EXCLUDED.status,
+       slug=EXCLUDED.slug,
+       title=EXCLUDED.title,
+       category=EXCLUDED.category,
+       summary=EXCLUDED.summary,
+       content=EXCLUDED.content,
+       status=EXCLUDED.status,
+       image_url=EXCLUDED.image_url,
+       image_public_id=EXCLUDED.image_public_id,
+       image_caption=EXCLUDED.image_caption,
        updated_at=EXCLUDED.updated_at,
        published_at=CASE
          WHEN EXCLUDED.status='draft' THEN NULL
@@ -146,6 +175,9 @@ export async function saveUpdate(input: {
       input.summary,
       input.content,
       input.status,
+      input.imageUrl || null,
+      input.imagePublicId || null,
+      input.imageCaption || null,
       now,
       publishedAt,
     ]

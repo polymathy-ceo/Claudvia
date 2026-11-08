@@ -519,3 +519,40 @@ html.motion-ready [data-reveal][data-revealed="true"] {
 .admin-back { color:#aeb2b7; font-size:11px; }
 @media(max-width:850px) { .admin-layout { grid-template-columns:1fr; } }
 @media(max-width:520px) { .admin-shell { padding:20px 16px 40px; } .admin-panel { padding:18px; } .admin-login { padding:24px 19px; } .admin-list-item { flex-direction:column; } }
+
+/* Claudvia announcement images */
+.update-list__image {
+  display: block;
+  width: 100%;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #171717;
+}
+
+.update-list__image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.article-featured-image {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.article-featured-image img {
+  display: block;
+  width: 100%;
+  max-height: 620px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.article-featured-image figcaption {
+  margin-top: 0.75rem;
+  color: #999;
+  font-size: 0.875rem;
+}

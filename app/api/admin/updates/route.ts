@@ -25,6 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({ ok: false }, { status: 401 });
+
   try {
     const body = await request.json();
     const title = clean(body.title, 140);
@@ -35,26 +36,62 @@ export async function POST(request: NextRequest) {
     const status = body.status === "published" ? "published" : "draft";
     const id = clean(body.id, 80) || undefined;
 
+    const imageUrl = clean(body.imageUrl, 1000);
+    const imagePublicId = clean(body.imagePublicId, 255);
+    const imageCaption = clean(body.imageCaption, 180);
+
     if (!title || !slug || !summary || !content) {
       return NextResponse.json({ ok: false, message: "Title, summary and announcement content are required." }, { status: 400 });
     }
+
     if (content.length < 10) {
       return NextResponse.json({ ok: false, message: "Please add a little more detail to the announcement." }, { status: 400 });
     }
-    const update = await saveUpdate({ id, title, slug, category, summary, content, status });
+
+    if (imageUrl && !/^https:\/\/res\.cloudinary\.com\/[a-zA-Z0-9_-]+\/image\/upload\//.test(imageUrl)) {
+      return NextResponse.json({ ok: false, message: "Invalid Cloudinary image URL." }, { status: 400 });
+    }
+
+    if (imagePublicId && !imagePublicId.startsWith("claudvia/updates/")) {
+      return NextResponse.json({ ok: false, message: "Invalid Cloudinary image ID." }, { status: 400 });
+    }
+
+    if (Boolean(imageUrl) !== Boolean(imagePublicId)) {
+      return NextResponse.json({ ok: false, message: "Image URL and image ID must both be provided." }, { status: 400 });
+    }
+
+    const update = await saveUpdate({
+      id,
+      title,
+      slug,
+      category,
+      summary,
+      content,
+      status,
+      imageUrl: imageUrl || null,
+      imagePublicId: imagePublicId || null,
+      imageCaption: imageCaption || null,
+    });
+
     return NextResponse.json({ ok: true, update });
   } catch (error) {
-    const message = error instanceof Error && error.message.includes("unique") ? "That URL slug is already in use." : "Could not save this update. Check that the URL slug is unique.";
+    const message = error instanceof Error && error.message.includes("unique")
+      ? "That URL slug is already in use."
+      : "Could not save this update. Check that the URL slug is unique.";
+
     return NextResponse.json({ ok: false, message }, { status: 400 });
   }
 }
 
 export async function DELETE(request: NextRequest) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({ ok: false }, { status: 401 });
+
   try {
     const body = await request.json();
     const id = clean(body.id, 80);
+
     if (!id) return NextResponse.json({ ok: false, message: "Missing update ID." }, { status: 400 });
+
     await deleteUpdate(id);
     return NextResponse.json({ ok: true });
   } catch {
