@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   },
   description: "Claudvia is a technology venture focused on useful software, digital products, developer tools, and technology infrastructure over time.",
   applicationName: "Claudvia",
+  verification: {
+    google: "9aiwWr6tCKm6_F2ccTjWxjPldItJLDQn49wO7aOXKQA"
+  },
   openGraph: {
     type: "website",
     siteName: "Claudvia",
