@@ -38,7 +38,13 @@ export const metadata: Metadata = {
     siteName: "Claudvia",
     title: "Claudvia — Built Beyond Limits.",
     description:
-      "Software, digital products, and technology infrastructure—built with intent."
+      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits."
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Claudvia — Built Beyond Limits.",
+    description:
+      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits."
   },
   robots: {
     index: true,
