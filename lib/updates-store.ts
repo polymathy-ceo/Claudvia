@@ -9,6 +9,7 @@ export type CompanyUpdate = {
   category: string;
   summary: string;
   content: string;
+  continuation: string | null;
   status: "draft" | "published";
   imageUrl: string | null;
   imagePublicId: string | null;
@@ -59,7 +60,8 @@ async function database(): Promise<SqlClient> {
         ALTER TABLE claudvia_updates
         ADD COLUMN IF NOT EXISTS image_url TEXT,
         ADD COLUMN IF NOT EXISTS image_public_id TEXT,
-        ADD COLUMN IF NOT EXISTS image_caption TEXT
+        ADD COLUMN IF NOT EXISTS image_caption TEXT,
+        ADD COLUMN IF NOT EXISTS continuation TEXT
       `);
 
       await sql.query(
@@ -84,6 +86,7 @@ function mapRow(row: Row): CompanyUpdate {
     category: String(row.category),
     summary: String(row.summary),
     content: String(row.content),
+    continuation: row.continuation == null ? null : String(row.continuation),
     status: row.status as "draft" | "published",
     imageUrl: row.image_url == null ? null : String(row.image_url),
     imagePublicId: row.image_public_id == null ? null : String(row.image_public_id),
@@ -134,6 +137,7 @@ export async function saveUpdate(input: {
   category: string;
   summary: string;
   content: string;
+  continuation?: string | null;
   status: "draft" | "published";
   imageUrl?: string | null;
   imagePublicId?: string | null;
@@ -146,16 +150,17 @@ export async function saveUpdate(input: {
 
   const rows = await sql.query(
     `INSERT INTO claudvia_updates
-      (id, slug, title, category, summary, content, status,
+      (id, slug, title, category, summary, content, continuation, status,
        image_url, image_public_id, image_caption,
        created_at, updated_at, published_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11,$12)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13)
      ON CONFLICT (id) DO UPDATE SET
        slug=EXCLUDED.slug,
        title=EXCLUDED.title,
        category=EXCLUDED.category,
        summary=EXCLUDED.summary,
        content=EXCLUDED.content,
+       continuation=EXCLUDED.continuation,
        status=EXCLUDED.status,
        image_url=EXCLUDED.image_url,
        image_public_id=EXCLUDED.image_public_id,
@@ -174,6 +179,7 @@ export async function saveUpdate(input: {
       input.category,
       input.summary,
       input.content,
+      input.continuation || null,
       input.status,
       input.imageUrl || null,
       input.imagePublicId || null,

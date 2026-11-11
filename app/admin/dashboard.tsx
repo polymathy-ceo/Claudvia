@@ -9,6 +9,7 @@ type Update = {
   category: string;
   summary: string;
   content: string;
+  continuation: string | null;
   status: "draft" | "published";
   updatedAt: number;
   imageUrl: string | null;
@@ -23,6 +24,7 @@ type UpdateForm = {
   category: string;
   summary: string;
   content: string;
+  continuation: string;
   status: "draft" | "published";
   imageUrl: string;
   imagePublicId: string;
@@ -36,6 +38,7 @@ const blank: UpdateForm = {
   category: "Company update",
   summary: "",
   content: "",
+  continuation: "",
   status: "draft",
   imageUrl: "",
   imagePublicId: "",
@@ -80,6 +83,7 @@ export default function AdminDashboard() {
       category: item.category,
       summary: item.summary,
       content: item.content,
+      continuation: item.continuation || "",
       status: item.status,
       imageUrl: item.imageUrl || "",
       imagePublicId: item.imagePublicId || "",
@@ -363,6 +367,20 @@ export default function AdminDashboard() {
                 />
               </label>
             </div>
+
+            <label>
+              Continuation (optional)
+              <textarea
+                rows={6}
+                value={form.continuation}
+                onChange={e => setForm({ ...form, continuation: e.target.value })}
+                placeholder="Continue the same announcement here. This text appears beneath the featured image."
+                maxLength={30000}
+              />
+              <span className="admin-hint">
+                This is part of the same announcement, not a separate caption.
+              </span>
+            </label>
 
             <div className="admin-actions">
               <button

@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
     const category = clean(body.category, 50) || "Company update";
     const summary = clean(body.summary, 300);
     const content = typeof body.content === "string" ? body.content.trim().slice(0, 30000) : "";
+    const continuation = typeof body.continuation === "string" ? body.continuation.trim().slice(0, 30000) : "";
     const status = body.status === "published" ? "published" : "draft";
     const id = clean(body.id, 80) || undefined;
 
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
       category,
       summary,
       content,
+      continuation: continuation || null,
       status,
       imageUrl: imageUrl || null,
       imagePublicId: imagePublicId || null,

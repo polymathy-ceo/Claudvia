@@ -33,54 +33,95 @@ export default async function UpdatesPage() {
       </section>
 
       <section className="section">
-        <div className="container">
+        <div className="container announcement-feed">
           {updates.length ? (
-            <div className="update-list">
-              {updates.map(update => (
-                <article className="update-list__item" key={update.id}>
-                  {update.imageUrl && (
-                    <Link
-                      href={`/updates/${update.slug}`}
-                      className="update-list__image"
-                      aria-label={`Read ${update.title}`}
-                    >
+            <div className="announcement-feed__list">
+              {updates.map(update => {
+                const paragraphs = update.content
+                  .split(/\n\s*\n/)
+                  .map(text => text.trim())
+                  .filter(Boolean);
+
+                const continuationParagraphs = (update.continuation || "")
+                  .split(/\n\s*\n/)
+                  .map(text => text.trim())
+                  .filter(Boolean);
+
+                const date = update.publishedAt
+                  ? new Date(update.publishedAt).toLocaleDateString("en", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "";
+
+                return (
+                  <article className="announcement-post announcement-feed__post" key={update.id}>
+                    <header className="announcement-author">
                       <img
-                        src={update.imageUrl}
-                        alt={update.imageCaption || update.title}
-                        loading="lazy"
+                        className="announcement-avatar"
+                        src="/og-image.jpg"
+                        alt="Claudvia"
+                        width={48}
+                        height={48}
                       />
-                    </Link>
-                  )}
+                      <div className="announcement-byline">
+                        <strong>Claudvia</strong>
+                        <span>{date}{date ? " · " : ""}{update.category}</span>
+                      </div>
+                    </header>
 
-                  <div className="update-list__meta">
-                    <span>
-                      {update.publishedAt
-                        ? new Date(update.publishedAt).toLocaleDateString("en", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : ""}
-                    </span>
-                    <span>{update.category}</span>
-                  </div>
-
-                  <div>
-                    <h2>
+                    <h2 className="announcement-feed__title">
                       <Link href={`/updates/${update.slug}`}>
                         {update.title}
                       </Link>
                     </h2>
-                    <p>{update.summary}</p>
+
+                    {update.summary && (
+                      <p className="article-lede">{update.summary}</p>
+                    )}
+
+                    <div className="prose announcement-body">
+                      {paragraphs.map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                      ))}
+                    </div>
+
+                    {update.imageUrl && (
+                      <figure className="article-featured-image announcement-image">
+                        <Link
+                          href={`/updates/${update.slug}`}
+                          aria-label={`Read ${update.title}`}
+                        >
+                          <img
+                            src={update.imageUrl}
+                            alt={update.imageCaption || update.title}
+                            loading="lazy"
+                          />
+                        </Link>
+                        {update.imageCaption && (
+                          <figcaption>{update.imageCaption}</figcaption>
+                        )}
+                      </figure>
+                    )}
+
+                    {continuationParagraphs.length > 0 && (
+                      <div className="prose announcement-continuation">
+                        {continuationParagraphs.map((paragraph, index) => (
+                          <p key={index}>{paragraph}</p>
+                        ))}
+                      </div>
+                    )}
+
                     <Link
-                      className="text-link"
+                      className="text-link announcement-read-more"
                       href={`/updates/${update.slug}`}
                     >
-                      Read announcement <span aria-hidden="true">→</span>
+                      Read full announcement <span aria-hidden="true">→</span>
                     </Link>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="empty-state empty-state--large">

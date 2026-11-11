@@ -103,7 +103,6 @@ export default async function HomePage() {
         <div className="container">
           <div className="section-heading">
             <div><p className="eyebrow">From Claudvia</p><h2>Updates, when there is something to share.</h2></div>
-            <Link className="text-link" href="/updates">All updates <span aria-hidden="true">→</span></Link>
           </div>
           {latestUpdates.length ? (
             <div className="update-grid">
@@ -129,6 +128,11 @@ export default async function HomePage() {
           ) : (
             <div className="empty-state"><span className="empty-state__mark">—</span><div><h3>No public announcements yet</h3><p>We will publish updates here when there is a meaningful company development to report.</p></div></div>
           )}
+          <div className="updates-view-all">
+            <Link className="button button--quiet" href="/updates">
+              View all updates <span aria-hidden="true">→</span>
+            </Link>
+          </div>
         </div>
       </section>
 

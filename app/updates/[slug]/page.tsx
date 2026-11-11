@@ -31,30 +31,54 @@ export default async function UpdateDetailPage({ params }: PageProps) {
     .map(text => text.trim())
     .filter(Boolean);
 
+  const continuationParagraphs = (update.continuation || "")
+    .split(/\n\s*\n/)
+    .map(text => text.trim())
+    .filter(Boolean);
+
+  const date = update.publishedAt
+    ? new Date(update.publishedAt).toLocaleDateString("en", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+
   return (
     <section className="page-hero page-hero--article">
-      <article className="container article-content">
+      <article className="container article-content announcement-post">
         <Link className="back-link" href="/updates">
           ← All updates
         </Link>
 
-        <p className="eyebrow">
-          {update.category}
-          <span> · </span>
-          {update.publishedAt
-            ? new Date(update.publishedAt).toLocaleDateString("en", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
-            : ""}
-        </p>
+        <header className="announcement-author">
+          <img
+            className="announcement-avatar"
+            src="/og-image.jpg"
+            alt="Claudvia"
+            width={48}
+            height={48}
+          />
+          <div className="announcement-byline">
+            <strong>Claudvia</strong>
+            <span>{date}{date ? " · " : ""}{update.category}</span>
+          </div>
+        </header>
 
         <h1>{update.title}</h1>
-        <p className="article-lede">{update.summary}</p>
+
+        {update.summary && (
+          <p className="article-lede">{update.summary}</p>
+        )}
+
+        <div className="prose article-prose announcement-body">
+          {paragraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </div>
 
         {update.imageUrl && (
-          <figure className="article-featured-image">
+          <figure className="article-featured-image announcement-image">
             <img
               src={update.imageUrl}
               alt={update.imageCaption || update.title}
@@ -65,11 +89,13 @@ export default async function UpdateDetailPage({ params }: PageProps) {
           </figure>
         )}
 
-        <div className="prose article-prose">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
+        {continuationParagraphs.length > 0 && (
+          <div className="prose article-prose announcement-continuation">
+            {continuationParagraphs.map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        )}
       </article>
     </section>
   );
