@@ -7,6 +7,8 @@ import "./globals.css";
 
 const siteUrl = "https://claudvia.vercel.app";
 
+const ogImage = "/og-image.jpg";
+
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -23,29 +25,46 @@ const organizationSchema = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+
   title: {
     default: "Claudvia — Built Beyond Limits.",
     template: "%s | Claudvia"
   },
+
   description:
     "Claudvia is a technology venture focused on useful software, digital products, developer tools, and technology infrastructure over time.",
+
   applicationName: "Claudvia",
+
   verification: {
     google: "9aiwWr6tCKm6_F2ccTjWxjPldItJLDQn49wO7aOXKQA"
   },
+
   openGraph: {
     type: "website",
     siteName: "Claudvia",
+    url: siteUrl,
     title: "Claudvia — Built Beyond Limits.",
     description:
-      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits."
+      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits.",
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: "Claudvia — Built Beyond Limits."
+      }
+    ]
   },
+
   twitter: {
     card: "summary_large_image",
     title: "Claudvia — Built Beyond Limits.",
     description:
-      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits."
+      "Claudvia is a technology venture building useful software, digital products, developer tools, and technology solutions designed to help people and businesses build beyond limits.",
+    images: [ogImage]
   },
+
   robots: {
     index: true,
     follow: true
@@ -72,12 +91,16 @@ export default function RootLayout({
             __html: JSON.stringify(organizationSchema)
           }}
         />
+
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>
+
         <SiteHeader />
         <ScrollReveal />
+
         <main id="main-content">{children}</main>
+
         <SiteFooter />
       </body>
     </html>
