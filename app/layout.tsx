@@ -7,7 +7,7 @@ import "./globals.css";
 
 const siteUrl = "https://claudvia.vercel.app";
 
-const ogImage = "/og-image.jpg";
+const ogImage = "/og-image.jpg?v=2";
 
 const organizationSchema = {
   "@context": "https://schema.org",
